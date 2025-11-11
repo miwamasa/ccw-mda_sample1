@@ -1,0 +1,70 @@
+{
+  "@context": {
+    "mfg": "http://example.org/manufacturing#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "organization": {
+    "name": "Acme Manufacturing Ltd"
+  },
+  "manufacturing_activities": [
+    {
+      "@type": "mfg:ManufacturingActivity",
+      "activity_id": "ACT-2024-001",
+      "activity_name": "Widget Assembly Line A",
+      "facility": "Factory Tokyo Plant 1",
+      "start_date": "2024-01-01",
+      "end_date": "2024-01-31",
+      "produces": {
+        "@type": "mfg:Product",
+        "product_name": "Standard Widget",
+        "quantity": 5000,
+        "unit": "pieces"
+      },
+      "energy_consumptions": [
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "electricity"
+          },
+          "amount": 12500,
+          "unit": "kWh"
+        },
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "natural_gas"
+          },
+          "amount": 850,
+          "unit": "m³"
+        }
+      ]
+    },
+    {
+      "@type": "mfg:ManufacturingActivity",
+      "activity_id": "ACT-2024-002",
+      "activity_name": "Component Machining",
+      "facility": "Factory Tokyo Plant 1",
+      "start_date": "2024-01-01",
+      "end_date": "2024-01-31",
+      "produces": {
+        "@type": "mfg:Product",
+        "product_name": "Metal Component X",
+        "quantity": 15000,
+        "unit": "pieces"
+      },
+      "energy_consumptions": [
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "electricity"
+          },
+          "amount": 8400,
+          "unit": "kWh"
+        }
+      ]
+    }
+  ]
+}

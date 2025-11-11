@@ -1,0 +1,86 @@
+{
+  "@context": {
+    "mfg": "http://example.org/manufacturing#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "organization": {
+    "name": "TechElectronics Japan"
+  },
+  "manufacturing_activities": [
+    {
+      "@type": "mfg:ManufacturingActivity",
+      "activity_id": "ACT-2024-201",
+      "activity_name": "PCB Assembly",
+      "facility": "Electronics Factory Yokohama",
+      "start_date": "2024-03-01",
+      "end_date": "2024-03-31",
+      "produces": {
+        "@type": "mfg:Product",
+        "product_name": "Printed Circuit Board",
+        "quantity": 50000,
+        "unit": "units"
+      },
+      "energy_consumptions": [
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "electricity"
+          },
+          "amount": 28000,
+          "unit": "kWh"
+        }
+      ]
+    },
+    {
+      "@type": "mfg:ManufacturingActivity",
+      "activity_id": "ACT-2024-202",
+      "activity_name": "Component Testing",
+      "facility": "Electronics Factory Yokohama",
+      "start_date": "2024-03-01",
+      "end_date": "2024-03-31",
+      "produces": {
+        "@type": "mfg:Product",
+        "product_name": "Tested Components",
+        "quantity": 50000,
+        "unit": "units"
+      },
+      "energy_consumptions": [
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "electricity"
+          },
+          "amount": 6800,
+          "unit": "kWh"
+        }
+      ]
+    },
+    {
+      "@type": "mfg:ManufacturingActivity",
+      "activity_id": "ACT-2024-203",
+      "activity_name": "Facility Heating",
+      "facility": "Electronics Factory Yokohama",
+      "start_date": "2024-03-01",
+      "end_date": "2024-03-31",
+      "produces": {
+        "@type": "mfg:Product",
+        "product_name": "Climate Control Service",
+        "quantity": 1,
+        "unit": "month"
+      },
+      "energy_consumptions": [
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "LPG"
+          },
+          "amount": 1200,
+          "unit": "kg"
+        }
+      ]
+    }
+  ]
+}
