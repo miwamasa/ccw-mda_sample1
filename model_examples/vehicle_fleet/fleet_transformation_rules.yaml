@@ -1,0 +1,152 @@
+# Vehicle Fleet to Emissions Transformation Rules
+# This demonstrates a complete working transformation
+
+metadata:
+  name: "Vehicle Fleet to Emissions Report"
+  version: "1.0"
+  source_ontology: "http://example.org/fleet#"
+  target_ontology: "http://example.org/fleet-emissions#"
+  description: "Transform vehicle fleet operations data to emissions reporting format"
+
+constants:
+  # Fuel emission factors (kg-CO2 per liter)
+  fuel_emission_factors:
+    diesel: 2.68
+    gasoline: 2.31
+    lpg: 1.51
+    electric: 0.0
+  defaults:
+    unknown_value: "Unknown"
+
+root_mapping:
+  target_type: "femit:EmissionsReport"
+  target_context:
+    femit: "http://example.org/fleet-emissions#"
+    xsd: "http://www.w3.org/2001/XMLSchema#"
+
+field_mappings:
+  - source_path: "fleet_info.fleet_id"
+    target_path: "report_id"
+    default: "FLEET-REPORT-001"
+
+  - source_path: "fleet_info.operator.organization_name"
+    target_path: "reporting_organization.organization_name"
+    default: "${constants.defaults.unknown_value}"
+
+  - source_path: "fleet_info.operator"
+    target_path: "reporting_organization.@type"
+    fixed_value: "femit:ReportingOrganization"
+
+calculation_rules:
+  - name: "calculate_vehicle_emissions"
+    description: "Calculate total CO2 emissions for a vehicle from all fuel consumptions"
+    input:
+      fuel_consumptions: "$.fuel_consumptions"
+    logic:
+      - aggregate_fuel: "sum(fc.fuel_amount for fc in fuel_consumptions)"
+      - get_fuel_type: "fuel_consumptions[0].fuel_type.fuel_type_name if fuel_consumptions else 'unknown'"
+      - lookup_factor: "constants.fuel_emission_factors[fuel_type.lower()]"
+      - calculate: "aggregate_fuel * lookup_factor"
+    output: "carbon_emissions"
+
+transformation_steps:
+  - name: "transform_fleet_to_emissions"
+    description: "Transform vehicle fleet operations to emissions report"
+    source: "vehicles"
+    target: "vehicle_emissions"
+    iteration: true
+    substeps:
+      - name: "extract_vehicle_emissions"
+        source: "$"  # Current vehicle
+        mapping:
+          - target: "vehicle_id"
+            source: "vehicle_id"
+
+          - target: "vehicle_type"
+            source: "vehicle_type"
+
+          - target: "fuel_type"
+            source: "fuel_consumptions[0].fuel_type.fuel_type_name"
+            transform: "lowercase"
+
+          - target: "fuel_consumed"
+            source: "fuel_consumptions"
+            aggregation:
+              function: "sum"
+              field: "fuel_amount"
+
+          - target: "distance_traveled"
+            source: "fuel_consumptions"
+            aggregation:
+              function: "sum"
+              field: "distance_traveled"
+
+          - target: "carbon_emissions"
+            calculation: "fuel_consumed_value * emission_factor_value"
+            dependencies:
+              fuel_consumed_value:
+                source: "fuel_consumptions"
+                aggregation:
+                  function: "sum"
+                  field: "fuel_amount"
+              emission_factor_value:
+                lookup:
+                  source: "constants.fuel_emission_factors"
+                  key_source: "fuel_consumptions[0].fuel_type.fuel_type_name"
+                  key_transform: "lowercase"
+
+          - target: "emission_factor"
+            lookup:
+              source: "constants.fuel_emission_factors"
+              key_source: "fuel_consumptions[0].fuel_type.fuel_type_name"
+              key_transform: "lowercase"
+
+  - name: "calculate_fleet_totals"
+    description: "Calculate fleet-wide totals"
+    aggregations:
+      - name: "total_emissions"
+        source: "vehicle_emissions"
+        aggregate:
+          function: "sum"
+          field: "carbon_emissions"
+        rounding: 2
+        target: "total_emissions"
+
+      - name: "total_fuel"
+        source: "vehicle_emissions"
+        aggregate:
+          function: "sum"
+          field: "fuel_consumed"
+        rounding: 2
+        target: "total_fuel_consumed"
+
+      - name: "total_distance"
+        source: "vehicle_emissions"
+        aggregate:
+          function: "sum"
+          field: "distance_traveled"
+        rounding: 2
+        target: "total_distance_traveled"
+
+      - name: "vehicle_count"
+        source: "vehicle_emissions"
+        aggregate:
+          function: "count"
+        target: "vehicle_count"
+
+  - name: "add_report_metadata"
+    description: "Add report metadata"
+    mappings:
+      - target: "reporting_period"
+        fixed_value: "2024-01"
+
+      - target: "report_date"
+        function: "current_date"
+        format: "YYYY-MM-DD"
+
+options:
+  preserve_source_context: true
+  case_sensitive: false
+  null_handling: "use_defaults"
+  date_format: "ISO8601"
+  decimal_precision: 2

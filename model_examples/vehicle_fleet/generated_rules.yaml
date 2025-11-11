@@ -1,51 +1,53 @@
 metadata:
-  name: Auto-Generated Transformation
+  name: Auto-Generated Transformation (Enhanced)
   version: '1.0'
   source_ontology: http://example.org/fleet#
   target_ontology: http://example.org/fleet-emissions#
-  description: Auto-generated transformation rules
+  description: Auto-generated transformation rules - enhanced with fuel emission calculations
   generated: true
 constants:
   defaults:
     unknown_value: Unknown
+  # Fuel emission factors (kg-CO2 per liter)
+  fuel_emission_factors:
+    diesel: 2.68
+    gasoline: 2.31
+    electric: 0.0
 root_mapping:
   target_type: target:EmissionsReport
   target_context:
     target: http://example.org/fleet-emissions#
     xsd: http://www.w3.org/2001/XMLSchema#
 field_mappings:
-- source_path: vehicle_id
-  target_path: vehicle_id
+- source_path: fleet_info.operator.organization_name
+  target_path: reporting_organization.organization_name
   default: ${constants.defaults.unknown_value}
-- source_path: vehicle_type
-  target_path: vehicle_type
-  default: ${constants.defaults.unknown_value}
-- source_path: organization_name
-  target_path: organization_name
-  default: ${constants.defaults.unknown_value}
+- source_path: fleet_info.fleet_id
+  target_path: report_id
+  default: "FLEET-REPORT"
 transformation_steps:
-- name: transform_vehicle
-  description: Transform Vehicle to VehicleEmission
+- name: transform_vehicles_to_emissions
+  description: Transform vehicles and their fuel consumption to emissions
   source: vehicles
   target: vehicle_emissions
   iteration: true
   substeps:
-  - name: map_vehicle_fields
+  - name: map_vehicle_and_calculate_emissions
     mapping:
     - target: vehicle_id
       source: vehicle_id
     - target: vehicle_type
       source: vehicle_type
-- name: transform_organization
-  description: Transform Organization to ReportingOrganization
-  source: organizations
-  target: reporting_organizations
-  iteration: true
-  substeps:
-  - name: map_organization_fields
-    mapping:
-    - target: organization_name
-      source: organization_name
+    - target: fuel_consumed
+      source: fuel_consumptions
+      aggregation: sum_fuel
+    - target: distance_traveled
+      source: fuel_consumptions
+      aggregation: sum_distance
+    - target: carbon_emissions
+      calculation: calculate_vehicle_emissions
+    - target: fuel_type
+      source: fuel_consumptions[0].fuel_type.fuel_type_name
 options:
   preserve_source_context: true
   case_sensitive: false

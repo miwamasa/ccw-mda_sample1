@@ -1,0 +1,28 @@
+{
+  "@context": {
+    "femit": "http://example.org/fleet-emissions#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "femit:EmissionsReport",
+  "report_id": "FLEET-2024-001",
+  "reporting_organization": {
+    "organization_name": "Metro Delivery Services"
+  },
+  "emissions": [
+    {
+      "vehicle_id": "VEH-001",
+      "vehicle_type": "delivery van",
+      "license_plate": "ABC-1234"
+    },
+    {
+      "vehicle_id": "VEH-002",
+      "vehicle_type": "sedan",
+      "license_plate": "XYZ-5678"
+    },
+    {
+      "vehicle_id": "VEH-003",
+      "vehicle_type": "truck",
+      "license_plate": "TRK-9012"
+    }
+  ]
+}

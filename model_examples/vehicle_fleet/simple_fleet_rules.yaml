@@ -1,0 +1,44 @@
+# Simplified Vehicle Fleet Transformation Rules
+# Works with current rule engine capabilities
+
+metadata:
+  name: "Simple Fleet to Emissions"
+  version: "1.0"
+  source_ontology: "http://example.org/fleet#"
+  target_ontology: "http://example.org/fleet-emissions#"
+
+constants:
+  fuel_emission_factors:
+    diesel: 2.68
+    gasoline: 2.31
+
+root_mapping:
+  target_type: "femit:EmissionsReport"
+  target_context:
+    femit: "http://example.org/fleet-emissions#"
+    xsd: "http://www.w3.org/2001/XMLSchema#"
+
+field_mappings:
+  - source_path: "fleet_info.fleet_id"
+    target_path: "report_id"
+  - source_path: "fleet_info.operator.organization_name"
+    target_path: "reporting_organization.organization_name"
+
+transformation_steps:
+  - name: "transform_vehicles"
+    source: "vehicles"
+    target: "emissions"
+    iteration: true
+    substeps:
+      - name: "map_fields"
+        mapping:
+          - target: "vehicle_id"
+            source: "vehicle_id"
+          - target: "vehicle_type"
+            source: "vehicle_type"
+          - target: "license_plate"
+            source: "license_plate"
+
+options:
+  preserve_source_context: true
+  case_sensitive: false
