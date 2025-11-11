@@ -1,0 +1,64 @@
+{
+  "@context": {
+    "ghg": "http://example.org/ghg-report#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "ghg:EmissionReport",
+  "reporting_organization": {
+    "organization_name": "TechElectronics Japan",
+    "@type": "ghg:Organization"
+  },
+  "emissions": [
+    {
+      "@type": "ghg:Scope2Emission",
+      "emission_source": "Electronics Factory Yokohama - PCB Assembly",
+      "source_category": "electricity",
+      "co2_amount": 14000.0,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 0.5,
+      "activity_data": {
+        "activity_id": "ACT-2024-201",
+        "energy_amount": 28000,
+        "energy_unit": "kWh",
+        "start_date": "2024-03-01",
+        "end_date": "2024-03-31"
+      }
+    },
+    {
+      "@type": "ghg:Scope2Emission",
+      "emission_source": "Electronics Factory Yokohama - Component Testing",
+      "source_category": "electricity",
+      "co2_amount": 3400.0,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 0.5,
+      "activity_data": {
+        "activity_id": "ACT-2024-202",
+        "energy_amount": 6800,
+        "energy_unit": "kWh",
+        "start_date": "2024-03-01",
+        "end_date": "2024-03-31"
+      }
+    },
+    {
+      "@type": "ghg:Scope1Emission",
+      "emission_source": "Electronics Factory Yokohama - Facility Heating",
+      "source_category": "lpg",
+      "co2_amount": 1812.0,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 1.51,
+      "activity_data": {
+        "activity_id": "ACT-2024-203",
+        "energy_amount": 1200,
+        "energy_unit": "kg",
+        "start_date": "2024-03-01",
+        "end_date": "2024-03-31"
+      }
+    }
+  ],
+  "total_scope1": 1812.0,
+  "total_scope2": 17400.0,
+  "total_emissions": 19212.0,
+  "report_id": "GHG-TJ-2025-11",
+  "reporting_period": "2024-03",
+  "report_date": "2025-11-11"
+}

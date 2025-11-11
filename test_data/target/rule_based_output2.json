@@ -1,0 +1,79 @@
+{
+  "@context": {
+    "ghg": "http://example.org/ghg-report#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "ghg:EmissionReport",
+  "reporting_organization": {
+    "organization_name": "Global Industries Corp",
+    "@type": "ghg:Organization"
+  },
+  "emissions": [
+    {
+      "@type": "ghg:Scope1Emission",
+      "emission_source": "Steel Mill Osaka - Steel Production",
+      "source_category": "coal",
+      "co2_amount": 435600.0,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 2.42,
+      "activity_data": {
+        "activity_id": "ACT-2024-101",
+        "energy_amount": 180000,
+        "energy_unit": "kg",
+        "start_date": "2024-02-01",
+        "end_date": "2024-02-29"
+      }
+    },
+    {
+      "@type": "ghg:Scope2Emission",
+      "emission_source": "Steel Mill Osaka - Steel Production",
+      "source_category": "electricity",
+      "co2_amount": 22500.0,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 0.5,
+      "activity_data": {
+        "activity_id": "ACT-2024-101",
+        "energy_amount": 45000,
+        "energy_unit": "kWh",
+        "start_date": "2024-02-01",
+        "end_date": "2024-02-29"
+      }
+    },
+    {
+      "@type": "ghg:Scope1Emission",
+      "emission_source": "Steel Mill Osaka - Steel Production",
+      "source_category": "natural_gas",
+      "co2_amount": 5075.0,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 2.03,
+      "activity_data": {
+        "activity_id": "ACT-2024-101",
+        "energy_amount": 2500,
+        "energy_unit": "m³",
+        "start_date": "2024-02-01",
+        "end_date": "2024-02-29"
+      }
+    },
+    {
+      "@type": "ghg:Scope1Emission",
+      "emission_source": "Steel Mill Osaka - Transport Operations",
+      "source_category": "diesel",
+      "co2_amount": 9380.0,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 2.68,
+      "activity_data": {
+        "activity_id": "ACT-2024-102",
+        "energy_amount": 3500,
+        "energy_unit": "liters",
+        "start_date": "2024-02-01",
+        "end_date": "2024-02-29"
+      }
+    }
+  ],
+  "total_scope1": 450055.0,
+  "total_scope2": 22500.0,
+  "total_emissions": 472555.0,
+  "report_id": "GHG-GIC-2025-11",
+  "reporting_period": "2024-02",
+  "report_date": "2025-11-11"
+}
