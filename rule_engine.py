@@ -311,7 +311,66 @@ class RuleEngine:
         step: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Execute a generic transformation step."""
-        # Placeholder for generic step execution
+        source_path = step.get('source')
+        target_path = step.get('target')
+        is_iteration = step.get('iteration', False)
+        substeps = step.get('substeps', [])
+
+        # Get source data
+        source_items = self._get_nested_value(source_data, source_path)
+
+        if source_items is None:
+            return target_data
+
+        # If iteration, process each item
+        if is_iteration and isinstance(source_items, list):
+            target_items = []
+
+            for item in source_items:
+                # Apply all substeps to this item
+                transformed_item = {}
+
+                for substep in substeps:
+                    mappings = substep.get('mapping', [])
+                    for mapping in mappings:
+                        target_field = mapping.get('target')
+                        source_field = mapping.get('source')
+                        transform = mapping.get('transform')
+
+                        # Get value from source item
+                        value = self._get_nested_value(item, source_field)
+
+                        # Apply transformation if specified
+                        if value and transform:
+                            value = self._apply_transform(value, transform)
+
+                        # Set in transformed item
+                        if value is not None:
+                            transformed_item[target_field] = value
+
+                target_items.append(transformed_item)
+
+            # Set target items in target data
+            if target_path and target_items:
+                self._set_nested_value(target_data, target_path, target_items)
+
+        else:
+            # Non-iteration: direct mapping
+            transformed = {}
+
+            for substep in substeps:
+                mappings = substep.get('mapping', [])
+                for mapping in mappings:
+                    target_field = mapping.get('target')
+                    source_field = mapping.get('source')
+
+                    value = self._get_nested_value(source_items, source_field)
+                    if value is not None:
+                        transformed[target_field] = value
+
+            if target_path and transformed:
+                self._set_nested_value(target_data, target_path, transformed)
+
         return target_data
 
     def _find_calculation_rule(self, rule_name: str) -> Optional[Dict[str, Any]]:

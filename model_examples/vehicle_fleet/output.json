@@ -1,0 +1,24 @@
+{
+  "@context": {
+    "target": "http://example.org/fleet-emissions#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "target:EmissionsReport",
+  "vehicle_id": "Unknown",
+  "vehicle_type": "Unknown",
+  "organization_name": "Unknown",
+  "vehicle_emissions": [
+    {
+      "vehicle_id": "VEH-001",
+      "vehicle_type": "delivery van"
+    },
+    {
+      "vehicle_id": "VEH-002",
+      "vehicle_type": "sedan"
+    },
+    {
+      "vehicle_id": "VEH-003",
+      "vehicle_type": "truck"
+    }
+  ]
+}
