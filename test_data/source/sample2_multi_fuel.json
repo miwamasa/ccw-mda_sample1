@@ -1,0 +1,79 @@
+{
+  "@context": {
+    "mfg": "http://example.org/manufacturing#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "organization": {
+    "name": "Global Industries Corp"
+  },
+  "manufacturing_activities": [
+    {
+      "@type": "mfg:ManufacturingActivity",
+      "activity_id": "ACT-2024-101",
+      "activity_name": "Steel Production",
+      "facility": "Steel Mill Osaka",
+      "start_date": "2024-02-01",
+      "end_date": "2024-02-29",
+      "produces": {
+        "@type": "mfg:Product",
+        "product_name": "Steel Billets",
+        "quantity": 250,
+        "unit": "tons"
+      },
+      "energy_consumptions": [
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "coal"
+          },
+          "amount": 180000,
+          "unit": "kg"
+        },
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "electricity"
+          },
+          "amount": 45000,
+          "unit": "kWh"
+        },
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "natural_gas"
+          },
+          "amount": 2500,
+          "unit": "m³"
+        }
+      ]
+    },
+    {
+      "@type": "mfg:ManufacturingActivity",
+      "activity_id": "ACT-2024-102",
+      "activity_name": "Transport Operations",
+      "facility": "Steel Mill Osaka",
+      "start_date": "2024-02-01",
+      "end_date": "2024-02-29",
+      "produces": {
+        "@type": "mfg:Product",
+        "product_name": "Material Transport Service",
+        "quantity": 1000,
+        "unit": "trips"
+      },
+      "energy_consumptions": [
+        {
+          "@type": "mfg:EnergyConsumption",
+          "energy_type": {
+            "@type": "mfg:EnergyType",
+            "name": "diesel"
+          },
+          "amount": 3500,
+          "unit": "liters"
+        }
+      ]
+    }
+  ]
+}
