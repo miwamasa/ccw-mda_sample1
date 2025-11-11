@@ -1,0 +1,121 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix femit: <http://example.org/fleet-emissions#> .
+
+# Ontology definition
+femit:FleetEmissionsOntology a owl:Ontology ;
+    rdfs:label "Fleet Emissions Ontology"@en ;
+    rdfs:comment "Ontology for fleet carbon emissions reporting"@en ;
+    owl:versionInfo "1.0" .
+
+# Class definitions
+femit:EmissionsReport a owl:Class ;
+    rdfs:label "Emissions Report"@en ;
+    rdfs:comment "Carbon emissions report for a vehicle fleet"@en .
+
+femit:VehicleEmission a owl:Class ;
+    rdfs:label "Vehicle Emission"@en ;
+    rdfs:comment "Carbon emissions from a single vehicle"@en .
+
+femit:ReportingOrganization a owl:Class ;
+    rdfs:label "Reporting Organization"@en ;
+    rdfs:comment "Organization submitting the emissions report"@en .
+
+# Report properties
+femit:reportId a owl:DatatypeProperty ;
+    rdfs:label "report ID"@en ;
+    rdfs:domain femit:EmissionsReport ;
+    rdfs:range xsd:string .
+
+femit:reportDate a owl:DatatypeProperty ;
+    rdfs:label "report date"@en ;
+    rdfs:domain femit:EmissionsReport ;
+    rdfs:range xsd:date .
+
+femit:reportingPeriod a owl:DatatypeProperty ;
+    rdfs:label "reporting period"@en ;
+    rdfs:domain femit:EmissionsReport ;
+    rdfs:range xsd:string .
+
+femit:reportingOrganization a owl:ObjectProperty ;
+    rdfs:label "reporting organization"@en ;
+    rdfs:domain femit:EmissionsReport ;
+    rdfs:range femit:ReportingOrganization .
+
+femit:hasEmission a owl:ObjectProperty ;
+    rdfs:label "has emission"@en ;
+    rdfs:domain femit:EmissionsReport ;
+    rdfs:range femit:VehicleEmission .
+
+# Organization properties
+femit:organizationName a owl:DatatypeProperty ;
+    rdfs:label "organization name"@en ;
+    rdfs:domain femit:ReportingOrganization ;
+    rdfs:range xsd:string .
+
+# Vehicle emission properties
+femit:vehicleId a owl:DatatypeProperty ;
+    rdfs:label "vehicle ID"@en ;
+    rdfs:domain femit:VehicleEmission ;
+    rdfs:range xsd:string .
+
+femit:vehicleType a owl:DatatypeProperty ;
+    rdfs:label "vehicle type"@en ;
+    rdfs:domain femit:VehicleEmission ;
+    rdfs:range xsd:string .
+
+femit:fuelType a owl:DatatypeProperty ;
+    rdfs:label "fuel type"@en ;
+    rdfs:domain femit:VehicleEmission ;
+    rdfs:range xsd:string .
+
+femit:fuelConsumed a owl:DatatypeProperty ;
+    rdfs:label "fuel consumed"@en ;
+    rdfs:comment "Total fuel consumed in liters"@en ;
+    rdfs:domain femit:VehicleEmission ;
+    rdfs:range xsd:decimal .
+
+femit:carbonEmissions a owl:DatatypeProperty ;
+    rdfs:label "carbon emissions"@en ;
+    rdfs:comment "Total CO2 emissions in kg"@en ;
+    rdfs:domain femit:VehicleEmission ;
+    rdfs:range xsd:decimal .
+
+femit:emissionFactor a owl:DatatypeProperty ;
+    rdfs:label "emission factor"@en ;
+    rdfs:comment "CO2 emission factor used (kg-CO2/liter)"@en ;
+    rdfs:domain femit:VehicleEmission ;
+    rdfs:range xsd:decimal .
+
+femit:distanceTraveled a owl:DatatypeProperty ;
+    rdfs:label "distance traveled"@en ;
+    rdfs:comment "Total distance traveled in km"@en ;
+    rdfs:domain femit:VehicleEmission ;
+    rdfs:range xsd:decimal .
+
+# Aggregate properties
+femit:totalEmissions a owl:DatatypeProperty ;
+    rdfs:label "total emissions"@en ;
+    rdfs:comment "Total fleet emissions in kg-CO2"@en ;
+    rdfs:domain femit:EmissionsReport ;
+    rdfs:range xsd:decimal .
+
+femit:totalFuelConsumed a owl:DatatypeProperty ;
+    rdfs:label "total fuel consumed"@en ;
+    rdfs:comment "Total fleet fuel consumption in liters"@en ;
+    rdfs:domain femit:EmissionsReport ;
+    rdfs:range xsd:decimal .
+
+femit:totalDistanceTraveled a owl:DatatypeProperty ;
+    rdfs:label "total distance traveled"@en ;
+    rdfs:comment "Total fleet distance in km"@en ;
+    rdfs:domain femit:EmissionsReport ;
+    rdfs:range xsd:decimal .
+
+femit:vehicleCount a owl:DatatypeProperty ;
+    rdfs:label "vehicle count"@en ;
+    rdfs:comment "Number of vehicles in report"@en ;
+    rdfs:domain femit:EmissionsReport ;
+    rdfs:range xsd:integer .

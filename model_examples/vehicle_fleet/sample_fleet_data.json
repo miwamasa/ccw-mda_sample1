@@ -1,0 +1,91 @@
+{
+  "@context": {
+    "fleet": "http://example.org/fleet#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "fleet_info": {
+    "fleet_id": "FLEET-2024-001",
+    "fleet_name": "City Logistics Fleet",
+    "operator": {
+      "@type": "fleet:Organization",
+      "organization_name": "Metro Delivery Services"
+    }
+  },
+  "vehicles": [
+    {
+      "@type": "fleet:Vehicle",
+      "vehicle_id": "VEH-001",
+      "vehicle_type": "delivery van",
+      "license_plate": "ABC-1234",
+      "model_year": 2020,
+      "fuel_consumptions": [
+        {
+          "@type": "fleet:FuelConsumption",
+          "consumption_date": "2024-01-15",
+          "fuel_type": {
+            "@type": "fleet:FuelType",
+            "fuel_type_name": "diesel"
+          },
+          "fuel_amount": 45.5,
+          "fuel_unit": "liters",
+          "distance_traveled": 520.0,
+          "distance_unit": "km"
+        },
+        {
+          "@type": "fleet:FuelConsumption",
+          "consumption_date": "2024-01-22",
+          "fuel_type": {
+            "@type": "fleet:FuelType",
+            "fuel_type_name": "diesel"
+          },
+          "fuel_amount": 38.2,
+          "fuel_unit": "liters",
+          "distance_traveled": 445.0,
+          "distance_unit": "km"
+        }
+      ]
+    },
+    {
+      "@type": "fleet:Vehicle",
+      "vehicle_id": "VEH-002",
+      "vehicle_type": "sedan",
+      "license_plate": "XYZ-5678",
+      "model_year": 2021,
+      "fuel_consumptions": [
+        {
+          "@type": "fleet:FuelConsumption",
+          "consumption_date": "2024-01-10",
+          "fuel_type": {
+            "@type": "fleet:FuelType",
+            "fuel_type_name": "gasoline"
+          },
+          "fuel_amount": 35.0,
+          "fuel_unit": "liters",
+          "distance_traveled": 420.0,
+          "distance_unit": "km"
+        }
+      ]
+    },
+    {
+      "@type": "fleet:Vehicle",
+      "vehicle_id": "VEH-003",
+      "vehicle_type": "truck",
+      "license_plate": "TRK-9012",
+      "model_year": 2019,
+      "fuel_consumptions": [
+        {
+          "@type": "fleet:FuelConsumption",
+          "consumption_date": "2024-01-20",
+          "fuel_type": {
+            "@type": "fleet:FuelType",
+            "fuel_type_name": "diesel"
+          },
+          "fuel_amount": 120.0,
+          "fuel_unit": "liters",
+          "distance_traveled": 680.0,
+          "distance_unit": "km"
+        }
+      ]
+    }
+  ]
+}

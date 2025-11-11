@@ -1,0 +1,127 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix fleet: <http://example.org/fleet#> .
+
+# Ontology definition
+fleet:VehicleFleetOntology a owl:Ontology ;
+    rdfs:label "Vehicle Fleet Ontology"@en ;
+    rdfs:comment "Ontology for managing vehicle fleet operations and fuel consumption"@en ;
+    owl:versionInfo "1.0" .
+
+# Class definitions
+fleet:Fleet a owl:Class ;
+    rdfs:label "Fleet"@en ;
+    rdfs:comment "A collection of vehicles operated by an organization"@en .
+
+fleet:Vehicle a owl:Class ;
+    rdfs:label "Vehicle"@en ;
+    rdfs:comment "A vehicle in the fleet"@en .
+
+fleet:FuelConsumption a owl:Class ;
+    rdfs:label "Fuel Consumption"@en ;
+    rdfs:comment "Record of fuel consumed by a vehicle"@en .
+
+fleet:FuelType a owl:Class ;
+    rdfs:label "Fuel Type"@en ;
+    rdfs:comment "Type of fuel used (gasoline, diesel, etc.)"@en .
+
+fleet:Organization a owl:Class ;
+    rdfs:label "Organization"@en ;
+    rdfs:comment "Organization operating the fleet"@en .
+
+# Property definitions
+
+# Fleet properties
+fleet:fleetId a owl:DatatypeProperty ;
+    rdfs:label "fleet ID"@en ;
+    rdfs:domain fleet:Fleet ;
+    rdfs:range xsd:string .
+
+fleet:fleetName a owl:DatatypeProperty ;
+    rdfs:label "fleet name"@en ;
+    rdfs:domain fleet:Fleet ;
+    rdfs:range xsd:string .
+
+fleet:operator a owl:ObjectProperty ;
+    rdfs:label "operator"@en ;
+    rdfs:domain fleet:Fleet ;
+    rdfs:range fleet:Organization .
+
+fleet:hasVehicle a owl:ObjectProperty ;
+    rdfs:label "has vehicle"@en ;
+    rdfs:domain fleet:Fleet ;
+    rdfs:range fleet:Vehicle .
+
+# Organization properties
+fleet:organizationName a owl:DatatypeProperty ;
+    rdfs:label "organization name"@en ;
+    rdfs:domain fleet:Organization ;
+    rdfs:range xsd:string .
+
+# Vehicle properties
+fleet:vehicleId a owl:DatatypeProperty ;
+    rdfs:label "vehicle ID"@en ;
+    rdfs:domain fleet:Vehicle ;
+    rdfs:range xsd:string .
+
+fleet:vehicleType a owl:DatatypeProperty ;
+    rdfs:label "vehicle type"@en ;
+    rdfs:comment "Type of vehicle (car, truck, van, etc.)"@en ;
+    rdfs:domain fleet:Vehicle ;
+    rdfs:range xsd:string .
+
+fleet:licensePlate a owl:DatatypeProperty ;
+    rdfs:label "license plate"@en ;
+    rdfs:domain fleet:Vehicle ;
+    rdfs:range xsd:string .
+
+fleet:modelYear a owl:DatatypeProperty ;
+    rdfs:label "model year"@en ;
+    rdfs:domain fleet:Vehicle ;
+    rdfs:range xsd:integer .
+
+fleet:hasFuelConsumption a owl:ObjectProperty ;
+    rdfs:label "has fuel consumption"@en ;
+    rdfs:domain fleet:Vehicle ;
+    rdfs:range fleet:FuelConsumption .
+
+# Fuel consumption properties
+fleet:consumptionDate a owl:DatatypeProperty ;
+    rdfs:label "consumption date"@en ;
+    rdfs:domain fleet:FuelConsumption ;
+    rdfs:range xsd:date .
+
+fleet:fuelType a owl:ObjectProperty ;
+    rdfs:label "fuel type"@en ;
+    rdfs:domain fleet:FuelConsumption ;
+    rdfs:range fleet:FuelType .
+
+fleet:fuelTypeName a owl:DatatypeProperty ;
+    rdfs:label "fuel type name"@en ;
+    rdfs:domain fleet:FuelType ;
+    rdfs:range xsd:string .
+
+fleet:fuelAmount a owl:DatatypeProperty ;
+    rdfs:label "fuel amount"@en ;
+    rdfs:comment "Amount of fuel consumed"@en ;
+    rdfs:domain fleet:FuelConsumption ;
+    rdfs:range xsd:decimal .
+
+fleet:fuelUnit a owl:DatatypeProperty ;
+    rdfs:label "fuel unit"@en ;
+    rdfs:comment "Unit of measurement (liters, gallons)"@en ;
+    rdfs:domain fleet:FuelConsumption ;
+    rdfs:range xsd:string .
+
+fleet:distanceTraveled a owl:DatatypeProperty ;
+    rdfs:label "distance traveled"@en ;
+    rdfs:comment "Distance traveled during this consumption period"@en ;
+    rdfs:domain fleet:FuelConsumption ;
+    rdfs:range xsd:decimal .
+
+fleet:distanceUnit a owl:DatatypeProperty ;
+    rdfs:label "distance unit"@en ;
+    rdfs:domain fleet:FuelConsumption ;
+    rdfs:range xsd:string .
