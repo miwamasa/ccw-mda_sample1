@@ -206,6 +206,12 @@ python ai_rule_generator.py \
     model_examples/vehicle_fleet/fleet-emissions-ontology.ttl \
     ai_generated_rules.yaml
 
+# If you get SSL certificate errors (corporate proxy environments):
+python ai_rule_generator.py --no-verify-ssl \
+    model_examples/vehicle_fleet/vehicle-fleet-ontology.ttl \
+    model_examples/vehicle_fleet/fleet-emissions-ontology.ttl \
+    ai_generated_rules.yaml
+
 # The AI will analyze ontologies and generate rules with:
 # - Semantic class/property mappings
 # - Automatic calculation inference (e.g., CO2 = fuel × emission_factor)

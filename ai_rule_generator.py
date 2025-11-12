@@ -19,7 +19,7 @@ class AIRuleGenerator:
     and generate intelligent transformation rules.
     """
 
-    def __init__(self, source_ontology: str, target_ontology: str, api_key: Optional[str] = None):
+    def __init__(self, source_ontology: str, target_ontology: str, api_key: Optional[str] = None, verify_ssl: bool = True):
         """
         Initialize AI rule generator.
 
@@ -27,6 +27,8 @@ class AIRuleGenerator:
             source_ontology: Path to source ontology TTL file
             target_ontology: Path to target ontology TTL file
             api_key: Anthropic API key (or use ANTHROPIC_API_KEY env var)
+            verify_ssl: Whether to verify SSL certificates (default: True)
+                       Set to False if you have SSL certificate issues in corporate environments
         """
         self.source_analyzer = OntologyAnalyzer(source_ontology)
         self.target_analyzer = OntologyAnalyzer(target_ontology)
@@ -36,7 +38,10 @@ class AIRuleGenerator:
         if not api_key:
             raise ValueError("ANTHROPIC_API_KEY environment variable or api_key parameter required")
 
-        self.client = anthropic.Anthropic(api_key=api_key)
+        # Configure httpx client with SSL settings
+        import httpx
+        http_client = httpx.Client(verify=verify_ssl)
+        self.client = anthropic.Anthropic(api_key=api_key, http_client=http_client)
 
         self.ai_suggestions = None
 
@@ -91,14 +96,37 @@ class AIRuleGenerator:
         print(f"Source: {source_structure['namespace']}")
         print(f"Target: {target_structure['namespace']}")
 
-        # Call Claude API
-        message = self.client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=4096,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
+        # Call Claude API with error handling
+        try:
+            message = self.client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=4096,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+        except anthropic.APIConnectionError as e:
+            print("\n" + "=" * 70)
+            print("❌ API CONNECTION ERROR")
+            print("=" * 70)
+            print("\nSSL証明書エラーが発生しました。")
+            print("\n解決方法:")
+            print("1. 企業プロキシ環境の場合、SSL検証を無効化:")
+            print("   python ai_rule_generator.py --no-verify-ssl source.ttl target.ttl output.yaml")
+            print("\n2. または、デモモードを使用:")
+            print("   python demo_ai_rule_generator.py")
+            print("\n3. または、Pythonコードで:")
+            print("   generator = AIRuleGenerator(source, target, verify_ssl=False)")
+            print("\n元のエラー:", str(e))
+            print("=" * 70)
+            raise
+        except Exception as e:
+            print("\n" + "=" * 70)
+            print("❌ API ERROR")
+            print("=" * 70)
+            print(f"Error: {type(e).__name__}: {str(e)}")
+            print("=" * 70)
+            raise
 
         # Parse AI response
         response_text = message.content[0].text
@@ -492,7 +520,8 @@ def generate_rules_with_ai(
     source_ontology: str,
     target_ontology: str,
     output_file: str,
-    api_key: Optional[str] = None
+    api_key: Optional[str] = None,
+    verify_ssl: bool = True
 ):
     """
     Generate transformation rules using AI analysis.
@@ -502,8 +531,9 @@ def generate_rules_with_ai(
         target_ontology: Path to target ontology TTL file
         output_file: Path to output YAML rules file
         api_key: Anthropic API key (optional, uses env var if not provided)
+        verify_ssl: Whether to verify SSL certificates (default: True)
     """
-    generator = AIRuleGenerator(source_ontology, target_ontology, api_key)
+    generator = AIRuleGenerator(source_ontology, target_ontology, api_key, verify_ssl=verify_ssl)
 
     # Analyze with AI
     generator.analyze_with_ai()
@@ -516,17 +546,56 @@ def generate_rules_with_ai(
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
 
-    if len(sys.argv) < 4:
-        print("Usage: python ai_rule_generator.py <source_ontology.ttl> <target_ontology.ttl> <output_rules.yaml> [api_key]")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        description="AI-powered transformation rule generator for RDF ontologies",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Basic usage (SSL verification enabled):
+  python ai_rule_generator.py source.ttl target.ttl output.yaml
 
-    api_key = sys.argv[4] if len(sys.argv) > 4 else None
+  # Disable SSL verification (for corporate proxy environments):
+  python ai_rule_generator.py --no-verify-ssl source.ttl target.ttl output.yaml
+
+  # With explicit API key:
+  python ai_rule_generator.py source.ttl target.ttl output.yaml --api-key YOUR_KEY
+
+  # If you have SSL issues, consider using the demo instead:
+  python demo_ai_rule_generator.py
+"""
+    )
+
+    parser.add_argument(
+        "source_ontology",
+        help="Path to source ontology TTL file"
+    )
+    parser.add_argument(
+        "target_ontology",
+        help="Path to target ontology TTL file"
+    )
+    parser.add_argument(
+        "output_file",
+        help="Path to output YAML rules file"
+    )
+    parser.add_argument(
+        "--api-key",
+        help="Anthropic API key (or use ANTHROPIC_API_KEY env var)",
+        default=None
+    )
+    parser.add_argument(
+        "--no-verify-ssl",
+        action="store_true",
+        help="Disable SSL certificate verification (use in corporate proxy environments)"
+    )
+
+    args = parser.parse_args()
 
     generate_rules_with_ai(
-        sys.argv[1],
-        sys.argv[2],
-        sys.argv[3],
-        api_key
+        args.source_ontology,
+        args.target_ontology,
+        args.output_file,
+        api_key=args.api_key,
+        verify_ssl=not args.no_verify_ssl
     )
