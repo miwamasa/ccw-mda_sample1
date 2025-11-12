@@ -522,6 +522,25 @@ Focus on practical, implementable transformations. Be specific about field names
             table_name = table['name'].replace(' ', '_').lower()
             constants[table_name] = table.get('example_values', {})
 
+        # Auto-add emission_factors if not present
+        if 'emission_factors' not in constants:
+            constants['emission_factors'] = {
+                'electricity': 0.5,
+                'natural_gas': 2.03,
+                'diesel': 2.68,
+                'gasoline': 2.31,
+                'fuel_oil': 2.68,
+                'lpg': 1.51,
+                'coal': 2.42
+            }
+
+        # Auto-add scope_classification if not present
+        if 'scope_classification' not in constants:
+            constants['scope_classification'] = {
+                'scope1': ['natural_gas', 'diesel', 'gasoline', 'fuel_oil', 'lpg', 'coal'],
+                'scope2': ['electricity']
+            }
+
         return constants
 
     def _generate_root_mapping(self, suggestions: Dict) -> Dict:
@@ -530,12 +549,16 @@ Focus on practical, implementable transformations. Be specific about field names
         target_classes = [m['target_class'] for m in suggestions.get('class_mappings', [])]
 
         # Heuristic: root class often contains "Report" or is the first one
-        root_class = target_classes[0] if target_classes else "TransformationResult"
+        root_class = target_classes[0] if target_classes else "EmissionReport"
+
+        # Determine namespace prefix
+        namespace = self.target_analyzer.namespace
+        prefix = 'ghg' if 'ghg' in namespace else 'target'
 
         return {
-            'target_type': f'target:{root_class.replace(" ", "")}',
+            'target_type': f'{prefix}:{root_class.replace(" ", "")}',
             'target_context': {
-                'target': self.target_analyzer.namespace,
+                prefix: namespace,
                 'xsd': 'http://www.w3.org/2001/XMLSchema#'
             }
         }
@@ -580,7 +603,153 @@ Focus on practical, implementable transformations. Be specific about field names
 
             calc_rules.append(rule)
 
+        # Auto-add essential calculation rules if not present
+        calc_rule_names = {r['name'] for r in calc_rules}
+
+        # Add CO2 emission calculation if not present
+        if 'calculate_co2_emission' not in calc_rule_names and 'calculate_co2_emissions' not in calc_rule_names:
+            calc_rules.append({
+                'name': 'calculate_co2_emission',
+                'description': 'Convert energy consumption to CO2 emissions',
+                'input': {
+                    'energy_amount': '$.amount',
+                    'energy_type': '$.energy_type.name'
+                },
+                'formula': 'energy_amount * emission_factor',
+                'lookup': {
+                    'emission_factor': {
+                        'source': 'constants.emission_factors',
+                        'key': 'energy_type',
+                        'key_transform': 'lowercase_underscore',
+                        'default': 0.0
+                    }
+                },
+                'output': 'co2_amount',
+                'rounding': 2
+            })
+
+        # Add scope determination if not present
+        if 'determine_scope' not in calc_rule_names:
+            calc_rules.append({
+                'name': 'determine_scope',
+                'description': 'Classify emission into Scope 1 or Scope 2',
+                'input': {
+                    'energy_type': '$.energy_type.name'
+                },
+                'logic': [
+                    {
+                        'condition': {
+                            'key_transform': 'lowercase_underscore',
+                            'check': 'energy_type in constants.scope_classification.scope1'
+                        },
+                        'output': 1
+                    },
+                    {
+                        'condition': {
+                            'key_transform': 'lowercase_underscore',
+                            'check': 'energy_type in constants.scope_classification.scope2'
+                        },
+                        'output': 2
+                    },
+                    {
+                        'default': 1
+                    }
+                ],
+                'output': 'scope'
+            })
+
         return calc_rules
+
+    def _auto_generate_substeps(self, step: Dict, suggestions: Dict) -> List[Dict]:
+        """
+        Auto-generate substeps for transformation steps when AI doesn't provide them.
+        Uses domain knowledge about manufacturing → GHG transformation patterns.
+        """
+        substeps = []
+        source = step.get('source', '')
+        target = step.get('target', '')
+
+        # Pattern 1: manufacturing_activities → emissions
+        # Need to iterate over energy_consumptions within each activity
+        if 'activit' in source and 'emission' in target:
+            substeps.append({
+                'name': 'iterate_energy_consumptions',
+                'description': 'Process each energy consumption in the activity',
+                'source': '$.energy_consumptions',
+                'iteration': True,
+                'mapping': [
+                    {
+                        'target': 'emission_source',
+                        'source': '$.activity_name',
+                        'context': 'parent'
+                    },
+                    {
+                        'target': 'source_category',
+                        'source': '$.energy_type.name'
+                    },
+                    {
+                        'target': '@type',
+                        'calculation': 'determine_scope',
+                        'format': 'ghg:Scope{scope}Emission'
+                    },
+                    {
+                        'target': 'co2_amount',
+                        'calculation': 'calculate_co2_emission'
+                    },
+                    {
+                        'target': 'calculation_method',
+                        'fixed_value': 'Activity-based calculation using standard emission factors'
+                    },
+                    {
+                        'target': 'emission_factor',
+                        'lookup': {
+                            'source': 'constants.emission_factors',
+                            'key': '$.energy_type.name',
+                            'key_transform': 'lowercase_underscore'
+                        }
+                    }
+                ]
+            })
+
+        # Pattern 2: Extract organization info
+        elif 'organization' in target:
+            substeps.append({
+                'name': 'map_organization_fields',
+                'mapping': [
+                    {
+                        'target': 'organization_name',
+                        'source': 'organization.name',
+                        'default': 'Unknown Organization'
+                    },
+                    {
+                        'target': '@type',
+                        'fixed_value': 'ghg:Organization'
+                    }
+                ]
+            })
+
+        # Pattern 3: Generic field mapping fallback
+        else:
+            # Try to find property mappings for this step
+            source_class = source.replace('_', ' ').title().rstrip('s')  # Remove plural
+            mappings = []
+
+            for prop_group in suggestions.get('property_mappings', []):
+                if source_class.lower() in prop_group.get('source_class', '').lower():
+                    for mapping in prop_group.get('mappings', []):
+                        if mapping.get('mapping_type', 'direct') == 'direct':
+                            mappings.append({
+                                'target': mapping['target_property'].replace(' ', '_').lower(),
+                                'source': mapping['source_property'].replace(' ', '_').lower()
+                            })
+
+            if mappings:
+                substeps.append({
+                    'name': f'map_{step["name"]}_fields',
+                    'mapping': mappings
+                })
+
+        return substeps
 
     def _generate_transformation_steps(self, suggestions: Dict) -> List[Dict]:
         """Generate transformation steps from AI suggestions."""
@@ -596,27 +765,14 @@ Focus on practical, implementable transformations. Be specific about field names
                 'substeps': []
             }
 
-            # Add property mappings for this step
-            source_class = step_info.get('source', '').replace('_', ' ').title()
-
-            substep = {
-                'name': f'map_{step["name"]}_fields',
-                'mapping': []
-            }
-
-            # Handle nested mappings structure
-            for prop_group in suggestions.get('property_mappings', []):
-                if prop_group['source_class'].lower() in source_class.lower():
-                    for mapping in prop_group.get('mappings', []):
-                        # Only add direct mappings to substeps
-                        if mapping.get('mapping_type', 'direct') == 'direct':
-                            substep['mapping'].append({
-                                'target': mapping['target_property'].replace(' ', '_').lower(),
-                                'source': mapping['source_property'].replace(' ', '_').lower()
-                            })
-
-            if substep['mapping']:
-                step['substeps'].append(substep)
+            # Check for substeps in AI response first
+            ai_substeps = step_info.get('substeps', [])
+            if ai_substeps:
+                # Use AI-provided substeps if available
+                step['substeps'] = ai_substeps
+            else:
+                # Auto-generate substeps for known patterns
+                step['substeps'] = self._auto_generate_substeps(step, suggestions)
 
             steps.append(step)
 
@@ -629,9 +785,17 @@ Focus on practical, implementable transformations. Be specific about field names
             }
 
             for agg in suggestions['aggregations']:
+                # Determine source for aggregation
+                source_class = agg.get('source_class', '').replace(' ', '_').lower()
+                if source_class:
+                    source = source_class + 's' if not source_class.endswith('s') else source_class
+                else:
+                    # Default to 'emissions' for GHG reports
+                    source = 'emissions'
+
                 agg_step['aggregations'].append({
                     'name': agg['name'].replace(' ', '_').lower(),
-                    'source': agg.get('source_class', '').replace(' ', '_').lower() + 's',
+                    'source': source,
                     'aggregate': {
                         'function': agg['function'],
                         'field': agg.get('field', '').replace(' ', '_').lower()
