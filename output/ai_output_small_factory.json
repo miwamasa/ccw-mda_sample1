@@ -1,0 +1,16 @@
+{
+  "@context": {
+    "target": "http://example.org/ghg-report#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "target:Emission",
+  "emission_source": "Unknown",
+  "source_category": "Unknown",
+  "energy_consumption_records": [
+    {},
+    {}
+  ],
+  "total_scope1": 0,
+  "total_scope2": 0,
+  "total_emissions": 0
+}
