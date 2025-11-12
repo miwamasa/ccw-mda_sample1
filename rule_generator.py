@@ -141,6 +141,8 @@ class RuleGenerator:
 
     def _infer_mappings(self):
         """Infer class and property mappings based on semantic similarity."""
+        print("\n=== Class Mapping Analysis ===")
+
         # Simple name-based matching for classes
         for src_cls in self.source_analyzer.classes:
             src_name = self.source_analyzer.get_label(src_cls).lower()
@@ -158,12 +160,27 @@ class RuleGenerator:
 
             if best_match:
                 self.class_mappings[src_cls] = best_match
+                src_label = self.source_analyzer.get_label(src_cls)
+                tgt_label = self.target_analyzer.get_label(best_match)
+                print(f"  ✓ {src_label} → {tgt_label} (score: {best_score:.2f})")
+            else:
+                src_label = self.source_analyzer.get_label(src_cls)
+                print(f"  ✗ {src_label} → No match found")
+
+        print(f"\nTotal class mappings: {len(self.class_mappings)}")
 
         # Infer property mappings
+        print("\n=== Property Mapping Analysis ===")
+
         for src_cls, tgt_cls in self.class_mappings.items():
+            src_cls_name = self.source_analyzer.get_label(src_cls)
+            tgt_cls_name = self.target_analyzer.get_label(tgt_cls)
+            print(f"\nFor class mapping: {src_cls_name} → {tgt_cls_name}")
+
             src_props = self.source_analyzer.get_class_properties(src_cls)
             tgt_props = self.target_analyzer.get_class_properties(tgt_cls)
 
+            prop_count = 0
             for src_prop in src_props:
                 src_prop_name = self.source_analyzer.get_label(src_prop).lower()
 
@@ -182,6 +199,19 @@ class RuleGenerator:
                     if src_cls not in self.property_mappings:
                         self.property_mappings[src_cls] = {}
                     self.property_mappings[src_cls][src_prop] = best_match
+
+                    src_prop_label = self.source_analyzer.get_label(src_prop)
+                    tgt_prop_label = self.target_analyzer.get_label(best_match)
+                    print(f"    ✓ {src_prop_label} → {tgt_prop_label} (score: {best_score:.2f})")
+                    prop_count += 1
+                else:
+                    src_prop_label = self.source_analyzer.get_label(src_prop)
+                    print(f"    ✗ {src_prop_label} → No match found")
+
+            print(f"  Properties mapped: {prop_count}/{len(src_props)}")
+
+        total_props = sum(len(v) for v in self.property_mappings.values())
+        print(f"\nTotal property mappings: {total_props}")
 
     def _similarity_score(self, str1: str, str2: str) -> float:
         """Calculate semantic similarity between two strings."""
@@ -402,11 +432,18 @@ class RuleGenerator:
         with open(output_file, 'w', encoding='utf-8') as f:
             yaml.dump(rules, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
-        print(f"Generated transformation rules saved to: {output_file}")
-        print(f"  Source ontology: {self.source_analyzer.namespace}")
-        print(f"  Target ontology: {self.target_analyzer.namespace}")
-        print(f"  Class mappings: {len(self.class_mappings)}")
-        print(f"  Property mappings: {sum(len(v) for v in self.property_mappings.values())}")
+        print("\n" + "=" * 70)
+        print("RULE GENERATION COMPLETE")
+        print("=" * 70)
+        print(f"Output file: {output_file}")
+        print(f"Source ontology: {self.source_analyzer.namespace}")
+        print(f"Target ontology: {self.target_analyzer.namespace}")
+        print(f"\nMappings Summary:")
+        print(f"  Classes mapped: {len(self.class_mappings)}")
+        print(f"  Properties mapped: {sum(len(v) for v in self.property_mappings.values())}")
+        print(f"  Field mappings generated: {len(rules.get('field_mappings', []))}")
+        print(f"  Transformation steps: {len(rules.get('transformation_steps', []))}")
+        print("=" * 70)
 
 
 def generate_rules_from_ontologies(
