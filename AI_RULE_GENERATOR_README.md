@@ -49,11 +49,25 @@ python ai_rule_generator.py source.ttl target.ttl output.yaml your-api-key
 
 ### 基本的な使い方
 
+**通常の使用:**
 ```bash
 python ai_rule_generator.py \
     model_examples/vehicle_fleet/vehicle-fleet-ontology.ttl \
     model_examples/vehicle_fleet/fleet-emissions-ontology.ttl \
     ai_generated_rules.yaml
+```
+
+**企業プロキシ環境（SSL証明書エラーがある場合）:**
+```bash
+python ai_rule_generator.py --no-verify-ssl \
+    model_examples/vehicle_fleet/vehicle-fleet-ontology.ttl \
+    model_examples/vehicle_fleet/fleet-emissions-ontology.ttl \
+    ai_generated_rules.yaml
+```
+
+**ヘルプを表示:**
+```bash
+python ai_rule_generator.py --help
 ```
 
 ### 出力例
@@ -240,6 +254,33 @@ rules_dict = generator.generate_rules()
 ValueError: ANTHROPIC_API_KEY environment variable or api_key parameter required
 ```
 → API キーを設定してください
+
+### SSL 証明書エラー（企業プロキシ環境）
+```
+[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate
+```
+→ 企業プロキシやSSL検査が原因の場合、以下の解決方法があります：
+
+**解決方法1: SSL検証を無効化（推奨）**
+```bash
+python ai_rule_generator.py --no-verify-ssl \
+    source.ttl target.ttl output.yaml
+```
+
+**解決方法2: Pythonコードで**
+```python
+generator = AIRuleGenerator(
+    source_ontology="source.ttl",
+    target_ontology="target.ttl",
+    verify_ssl=False  # SSL検証を無効化
+)
+```
+
+**解決方法3: デモモードを使用**
+```bash
+# APIキー不要、ネットワーク接続不要
+python demo_ai_rule_generator.py
+```
 
 ### JSON パースエラー
 ```
