@@ -1,0 +1,18 @@
+{
+  "@context": {
+    "mfg": "http://example.org/manufacturing#"
+  },
+  "manufacturingActivities": [
+    {
+      "@type": "mfg:InvalidClass",
+      "activityId": "ACT-001",
+      "activityName": "Test Activity",
+      "produces": {
+        "@type": "mfg:Product",
+        "productName": "Widget",
+        "quantity": "not_a_number",
+        "unit": "pieces"
+      }
+    }
+  ]
+}

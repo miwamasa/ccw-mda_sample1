@@ -163,19 +163,97 @@ class AIRuleGenerator:
         """Create prompt for AI analysis."""
         prompt = f"""You are an expert in ontology mapping and data transformation. Analyze these two ontologies and suggest transformation rules.
 
-IMPORTANT: JSON-LD Field Naming Convention
-- Ontology properties use camelCase (e.g., hasEnergyConsumption, activityName)
-- Actual JSON-LD data fields use snake_case (e.g., energy_consumptions, activity_name)
-- Array properties are pluralized (e.g., hasEnergyConsumption → energy_consumptions)
-- When mapping properties, ALWAYS use snake_case field names for the actual data
-- Convert camelCase ontology properties to snake_case: hasEnergyConsumption → energy_consumptions
+CRITICAL: JSON-LD Field Naming and Structure Rules
+==================================================
 
-Example Conversions:
-- hasEnergyConsumption → energy_consumptions (array)
-- activityName → activity_name
-- activityId → activity_id
-- productName → product_name
-- organizationName → organization_name
+1. NAMING CONVENTION CONVERSION:
+   - Ontology properties: camelCase (e.g., hasEnergyConsumption, activityName)
+   - JSON-LD instance fields: snake_case (e.g., energy_consumptions, activity_name)
+   - ALWAYS convert camelCase → snake_case in your field mappings
+
+2. ARRAY PROPERTY NAMING:
+   - Ontology: has + Name → JSON-LD: pluralized array
+   - hasEnergyConsumption → energy_consumptions
+   - hasEmission → emissions
+   - hasActivity → activities
+
+3. NESTED OBJECT SIMPLIFICATION:
+   - Inside nested objects, remove redundant prefixes
+   - energyTypeName (in energy_type object) → name
+   - organizationName (in organization object) → organization_name (at root) OR name (inside organization object)
+   - Context makes the field clear, so simplify when nested
+
+4. COMPLETE NAMING EXAMPLES:
+   Ontology Property         →  JSON-LD Field
+   ==========================================
+   activityId               →  activity_id
+   activityName             →  activity_name
+   hasEnergyConsumption     →  energy_consumptions (array)
+   energyTypeName           →  name (inside energy_type object)
+   reportingOrganization    →  reporting_organization (object)
+   organizationName         →  organization_name
+   totalEmissions           →  total_emissions
+   co2Amount                →  co2_amount
+   emissionSource           →  emission_source
+   calculationMethod        →  calculation_method
+
+5. DATA STRUCTURE PATTERNS:
+
+   Pattern A - DatatypeProperty:
+   Ontology: mfg:activityId (xsd:string)
+   JSON-LD:  "activity_id": "ACT-2024-001"
+
+   Pattern B - ObjectProperty (single):
+   Ontology: mfg:produces → mfg:Product
+   JSON-LD:  "produces": {{"@type": "mfg:Product", "product_name": "Widget", "quantity": 5000}}
+
+   Pattern C - ObjectProperty (array):
+   Ontology: mfg:hasEnergyConsumption → mfg:EnergyConsumption
+   JSON-LD:  "energy_consumptions": [{{"@type": "mfg:EnergyConsumption", ...}}, {{...}}]
+
+   Pattern D - Nested object simplification:
+   Ontology: mfg:energyType → mfg:EnergyType with mfg:energyTypeName
+   JSON-LD:  "energy_type": {{"@type": "mfg:EnergyType", "name": "electricity"}}
+             (Note: energyTypeName becomes just "name" inside energy_type object)
+
+6. COMPLETE STRUCTURE EXAMPLE:
+
+   Source JSON-LD (Manufacturing):
+   {{
+     "manufacturing_activities": [
+       {{
+         "@type": "mfg:ManufacturingActivity",
+         "activity_id": "ACT-2024-001",
+         "activity_name": "Widget Assembly",
+         "energy_consumptions": [
+           {{
+             "@type": "mfg:EnergyConsumption",
+             "energy_type": {{
+               "@type": "mfg:EnergyType",
+               "name": "electricity"
+             }},
+             "amount": 12500,
+             "unit": "kWh"
+           }}
+         ]
+       }}
+     ]
+   }}
+
+   Target JSON-LD (GHG Report):
+   {{
+     "@type": "ghg:EmissionReport",
+     "report_id": "GHG-2024-01",
+     "emissions": [
+       {{
+         "@type": "ghg:Scope2Emission",
+         "emission_source": "Widget Assembly",
+         "source_category": "electricity",
+         "co2_amount": 6250.0
+       }}
+     ],
+     "total_emissions": 6250.0
+   }}
 
 SOURCE ONTOLOGY:
 {json.dumps(source_structure, indent=2)}
@@ -185,15 +263,18 @@ TARGET ONTOLOGY:
 
 Your task:
 1. Identify class mappings between source and target ontologies
-2. For each class mapping, identify property mappings
-   - Convert ontology property names to snake_case JSON-LD field names
-   - Use plural forms for array properties (e.g., energy_consumptions, not energy_consumption)
-3. Identify where aggregations are needed (e.g., summing values from arrays)
-4. Identify where calculations are needed (e.g., multiplying values, applying factors)
-5. Suggest any constant values or lookup tables that might be needed
+2. For each class mapping, identify property mappings using snake_case field names
+3. Identify nested array iterations (e.g., energy_consumptions within manufacturing_activities)
+4. Identify calculations (e.g., amount × emission_factor = co2_amount)
+5. Identify aggregations (e.g., sum of all co2_amount → total_emissions)
+6. Provide emission factors as constants (electricity: 0.5, natural_gas: 2.03, diesel: 2.68 kg-CO2/unit)
 
-CRITICAL: In your response, use snake_case field names (e.g., "manufacturing_activities", "energy_consumptions")
-NOT the camelCase ontology names (e.g., "ManufacturingActivity", "hasEnergyConsumption").
+CRITICAL REQUIREMENTS:
+- Use snake_case for ALL field names in your response
+- Use plural forms for array fields (activities, consumptions, emissions)
+- Include substeps with actual field mappings in transformation_steps
+- Do NOT leave substeps empty
+- Specify which fields to iterate over (e.g., "$.energy_consumptions")
 
 Respond with a JSON object in this format:
 {{
@@ -255,14 +336,48 @@ Respond with a JSON object in this format:
   "transformation_steps": [
     {{
       "step": 1,
-      "name": "step_name",
-      "description": "what this step does",
-      "source": "source_collection",
-      "target": "target_collection",
-      "iteration": true
+      "name": "transform_activities_to_emissions",
+      "description": "Transform manufacturing activities to emissions",
+      "source": "manufacturing_activities",
+      "target": "emissions",
+      "iteration": true,
+      "substeps": [
+        {{
+          "name": "iterate_energy_consumptions",
+          "description": "Iterate over energy_consumptions array",
+          "source": "$.energy_consumptions",
+          "iteration": true,
+          "substeps": [
+            {{
+              "name": "map_fields",
+              "field_mappings": [
+                {{
+                  "target": "emission_source",
+                  "source": "$.activity_name"
+                }},
+                {{
+                  "target": "source_category",
+                  "source": "$.energy_type.name"
+                }}
+              ]
+            }},
+            {{
+              "name": "calculate_emissions",
+              "calculation": "calculate_co2",
+              "inputs": {{
+                "amount": "$.amount",
+                "energy_type": "$.energy_type.name"
+              }}
+            }}
+          ]
+        }}
+      ]
     }}
   ]
 }}
+
+CRITICAL: Every transformation_step MUST include substeps with actual field mappings or calculations.
+DO NOT generate empty substeps arrays. Show the complete mapping chain from source to target.
 
 Focus on practical, implementable transformations. Be specific about field names and calculations."""
 
