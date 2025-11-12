@@ -163,6 +163,20 @@ class AIRuleGenerator:
         """Create prompt for AI analysis."""
         prompt = f"""You are an expert in ontology mapping and data transformation. Analyze these two ontologies and suggest transformation rules.
 
+IMPORTANT: JSON-LD Field Naming Convention
+- Ontology properties use camelCase (e.g., hasEnergyConsumption, activityName)
+- Actual JSON-LD data fields use snake_case (e.g., energy_consumptions, activity_name)
+- Array properties are pluralized (e.g., hasEnergyConsumption → energy_consumptions)
+- When mapping properties, ALWAYS use snake_case field names for the actual data
+- Convert camelCase ontology properties to snake_case: hasEnergyConsumption → energy_consumptions
+
+Example Conversions:
+- hasEnergyConsumption → energy_consumptions (array)
+- activityName → activity_name
+- activityId → activity_id
+- productName → product_name
+- organizationName → organization_name
+
 SOURCE ONTOLOGY:
 {json.dumps(source_structure, indent=2)}
 
@@ -172,9 +186,14 @@ TARGET ONTOLOGY:
 Your task:
 1. Identify class mappings between source and target ontologies
 2. For each class mapping, identify property mappings
+   - Convert ontology property names to snake_case JSON-LD field names
+   - Use plural forms for array properties (e.g., energy_consumptions, not energy_consumption)
 3. Identify where aggregations are needed (e.g., summing values from arrays)
 4. Identify where calculations are needed (e.g., multiplying values, applying factors)
 5. Suggest any constant values or lookup tables that might be needed
+
+CRITICAL: In your response, use snake_case field names (e.g., "manufacturing_activities", "energy_consumptions")
+NOT the camelCase ontology names (e.g., "ManufacturingActivity", "hasEnergyConsumption").
 
 Respond with a JSON object in this format:
 {{
@@ -190,11 +209,15 @@ Respond with a JSON object in this format:
     {{
       "source_class": "ClassName",
       "target_class": "TargetClassName",
-      "source_property": "propertyName",
-      "target_property": "targetPropertyName",
-      "mapping_type": "direct|calculation|aggregation",
-      "confidence": 0.90,
-      "reasoning": "explanation"
+      "mappings": [
+        {{
+          "source_property": "propertyName",
+          "target_property": "targetPropertyName",
+          "mapping_type": "direct|calculation|aggregation",
+          "confidence": 0.90,
+          "reasoning": "explanation"
+        }}
+      ]
     }}
   ],
   "calculations": [
