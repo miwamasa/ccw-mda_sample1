@@ -12,11 +12,12 @@ This represents a **fully model-driven approach** where ontologies drive the ent
 
 ## Key Features
 
-- **🤖 Automatic Rule Generation**: Reads RDF/Turtle ontologies and generates YAML transformation rules
-- **🔍 Intelligent Mapping**: Uses semantic similarity to infer class and property mappings
+- **🤖 AI-Powered Rule Generation**: Uses Claude AI to semantically analyze ontologies and generate intelligent transformation rules
+- **🔍 Automatic Rule Generation**: Similarity-based approach using semantic matching algorithms
+- **🧠 Semantic Understanding**: AI infers complex calculations, aggregations, and domain-specific logic
 - **📋 Declarative Rules**: All transformation logic in external YAML files, not code
 - **🔄 Generic Engine**: Reusable engine works with ANY ontology pair
-- **🧪 Comprehensive Testing**: 17+ rule generation tests, 16+ engine tests, 21+ domain-specific tests
+- **🧪 Comprehensive Testing**: 64 tests covering all components (62 passing + 2 integration requiring API key)
 - **📚 Multi-Domain Support**: Proven with manufacturing→GHG and vehicle fleet→emissions transformations
 
 ## Architecture
@@ -117,8 +118,12 @@ ccw-mda_sample1/
 │       ├── fleet-emissions-ontology.ttl  # Target: Emissions reporting
 │       ├── generated_rules.yaml          # Auto-generated rules
 │       └── sample_fleet_data.json        # Sample data
-├── rule_generator.py                     # **NEW** Automatic rule generator
-├── test_rule_generation.py               # **NEW** Rule generation tests (17 tests)
+├── rule_generator.py                     # Automatic rule generator (similarity-based)
+├── ai_rule_generator.py                  # **NEW** AI-powered rule generator
+├── test_rule_generation.py               # Rule generation tests (17 tests)
+├── test_ai_rule_generator.py             # **NEW** AI rule generator tests (10 tests)
+├── demo_ai_rule_generator.py             # **NEW** Demo script for AI generator
+├── AI_RULE_GENERATOR_README.md           # **NEW** AI generator documentation (Japanese)
 ├── transformation_rules.yaml             # Hand-crafted transformation rules
 ├── rule_engine.py                        # Generic transformation engine
 ├── test_rule_engine.py                   # Rule engine tests (16 tests)
@@ -140,11 +145,18 @@ ccw-mda_sample1/
 - Python 3.7 or higher
 - PyYAML (for rule parsing)
 - RDFLib (for ontology parsing)
+- Anthropic SDK (for AI-powered rule generation - optional)
 
 ### Setup
 ```bash
 cd ccw-mda_sample1
+
+# Basic setup (for similarity-based rule generation)
 pip install pyyaml rdflib
+
+# Optional: For AI-powered rule generation
+pip install anthropic
+export ANTHROPIC_API_KEY='your-api-key'
 ```
 
 ## Usage
@@ -182,6 +194,61 @@ Transformation complete: ... -> output.json
   Rule file: generated_rules.yaml
   Total emissions: [calculated value] kg-CO2
 ```
+
+### 🤖 AI-Powered Rule Generation (Recommended)
+
+For more intelligent rule generation using Claude AI:
+
+```bash
+# Run AI-powered rule generator
+python ai_rule_generator.py \
+    model_examples/vehicle_fleet/vehicle-fleet-ontology.ttl \
+    model_examples/vehicle_fleet/fleet-emissions-ontology.ttl \
+    ai_generated_rules.yaml
+
+# The AI will analyze ontologies and generate rules with:
+# - Semantic class/property mappings
+# - Automatic calculation inference (e.g., CO2 = fuel × emission_factor)
+# - Aggregation rules (sum, count, average)
+# - Lookup tables and constants
+# - Transformation steps with reasoning
+```
+
+**AI Output Example:**
+```
+📋 CLASS MAPPINGS:
+  ✓ Vehicle → VehicleEmission (95% confidence)
+    Reasoning: Vehicle represents fleet vehicles that generate emissions
+
+🔢 CALCULATIONS:
+  • calculate_vehicle_emissions
+    Formula: sum(fuel_amount * emission_factor)
+    Reasoning: CO2 emissions from fuel consumption using standard factors
+
+📊 AGGREGATIONS:
+  • sum_fuel_consumed: Total fuel across all consumption records
+  • count_vehicles: Number of vehicles in fleet
+```
+
+**Demo Mode (No API Key Required):**
+```bash
+# Run demonstration with mock AI responses
+python demo_ai_rule_generator.py
+```
+
+See [AI_RULE_GENERATOR_README.md](AI_RULE_GENERATOR_README.md) for detailed documentation (Japanese).
+
+**Comparison:**
+
+| Feature | rule_generator.py | ai_rule_generator.py |
+|---------|-------------------|----------------------|
+| Class Mapping | String similarity | Semantic understanding |
+| Property Mapping | Name matching | Meaning + type analysis |
+| Calculations | ❌ None | ✅ Auto-inferred |
+| Aggregations | ❌ None | ✅ Auto-inferred |
+| Constants/Lookups | ❌ None | ✅ Suggested |
+| Reasoning | ❌ No | ✅ Provided |
+| API Key Required | No | Yes (Anthropic) |
 
 ### Manual Rule-Based Transformation
 
