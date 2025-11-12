@@ -1,0 +1,22 @@
+metadata:
+  name: Auto-Generated Transformation
+  version: '1.0'
+  source_ontology: http://example.org/manufacturing#
+  target_ontology: http://example.org/ghg-report#
+  description: Auto-generated transformation rules
+  generated: true
+constants:
+  defaults:
+    unknown_value: Unknown
+root_mapping:
+  target_type: target:EmissionReport
+  target_context:
+    target: http://example.org/ghg-report#
+    xsd: http://www.w3.org/2001/XMLSchema#
+field_mappings: []
+transformation_steps: []
+options:
+  preserve_source_context: true
+  case_sensitive: false
+  null_handling: use_defaults
+calculation_rules: []
