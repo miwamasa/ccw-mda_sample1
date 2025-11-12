@@ -1,0 +1,64 @@
+{
+  "@context": {
+    "ghg": "http://example.org/ghg-report#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "ghg:EmissionReport",
+  "reporting_organization": {
+    "organization_name": "Acme Manufacturing Ltd",
+    "@type": "ghg:Organization"
+  },
+  "emissions": [
+    {
+      "@type": "ghg:Scope2Emission",
+      "emission_source": "Factory Tokyo Plant 1 - Widget Assembly Line A",
+      "source_category": "electricity",
+      "co2_amount": 6250.0,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 0.5,
+      "activity_data": {
+        "activity_id": "ACT-2024-001",
+        "energy_amount": 12500,
+        "energy_unit": "kWh",
+        "start_date": "2024-01-01",
+        "end_date": "2024-01-31"
+      }
+    },
+    {
+      "@type": "ghg:Scope1Emission",
+      "emission_source": "Factory Tokyo Plant 1 - Widget Assembly Line A",
+      "source_category": "natural_gas",
+      "co2_amount": 1725.5,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 2.03,
+      "activity_data": {
+        "activity_id": "ACT-2024-001",
+        "energy_amount": 850,
+        "energy_unit": "m³",
+        "start_date": "2024-01-01",
+        "end_date": "2024-01-31"
+      }
+    },
+    {
+      "@type": "ghg:Scope2Emission",
+      "emission_source": "Factory Tokyo Plant 1 - Component Machining",
+      "source_category": "electricity",
+      "co2_amount": 4200.0,
+      "calculation_method": "Activity-based calculation using standard emission factors",
+      "emission_factor": 0.5,
+      "activity_data": {
+        "activity_id": "ACT-2024-002",
+        "energy_amount": 8400,
+        "energy_unit": "kWh",
+        "start_date": "2024-01-01",
+        "end_date": "2024-01-31"
+      }
+    }
+  ],
+  "total_scope1": 1725.5,
+  "total_scope2": 10450.0,
+  "total_emissions": 12175.5,
+  "reporting_period": "2024-01",
+  "report_id": "GHG-AML-2024-01",
+  "report_date": "2025-11-12"
+}
