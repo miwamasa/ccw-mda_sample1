@@ -1,0 +1,116 @@
+================================================================================
+                   AI生成 vs 自動生成：構造比較図
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          AI生成（動作しない）                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+transform_activities_to_emissions
+  └─ substeps:
+      └─ iterate_energy_consumptions [Level 1]
+          ├─ source: $.energy_consumptions
+          ├─ iteration: true
+          └─ substeps: [Level 2] ❌ rule_engineは処理しない
+              ├─ map_emission_fields
+              │   └─ field_mappings: ❌ 認識されない
+              │       ├─ {target: emission_source, source: $.activity_name}
+              │       └─ {target: source_category, source: $.energy_type.name}
+              ├─ calculate_co2_amount
+              │   ├─ calculation: calculate_co2_emissions
+              │   └─ output: co2_amount
+              └─ determine_emission_type
+                  └─ conditional_mapping: ❌ サポートされていない
+                      └─ {field: $.energy_type.name, ...}
+
+結果: emissions = [{}, {}, {}]  ❌ すべて空
+      total_emissions = 0 kg-CO2  ❌
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        自動生成（動作する）                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+transform_activities_to_emissions
+  └─ substeps:
+      └─ iterate_energy_consumptions [Level 1]
+          ├─ source: $.energy_consumptions
+          ├─ iteration: true
+          └─ mapping: ✅ rule_engineが処理
+              ├─ {target: emission_source, source: $.activity_name, context: parent}
+              ├─ {target: source_category, source: $.energy_type.name}
+              ├─ {target: '@type', calculation: determine_scope, format: 'ghg:Scope{scope}Emission'}
+              ├─ {target: co2_amount, calculation: calculate_co2_emission}
+              ├─ {target: calculation_method, fixed_value: 'Activity-based...'}
+              └─ {target: emission_factor, lookup: {source: constants.emission_factors, ...}}
+
+結果: emissions = [
+        {co2_amount: 6250.0, @type: 'ghg:Scope2Emission', ...},  ✅
+        {co2_amount: 1725.5, @type: 'ghg:Scope1Emission', ...},  ✅
+        {co2_amount: 4200.0, @type: 'ghg:Scope2Emission', ...}   ✅
+      ]
+      total_emissions = 12175.5 kg-CO2  ✅
+
+
+================================================================================
+                            重要な違い
+================================================================================
+
+┌──────────────────┬─────────────────────┬─────────────────────┬─────────┐
+│     項目         │    AI生成           │   自動生成          │  互換性  │
+├──────────────────┼─────────────────────┼─────────────────────┼─────────┤
+│ キー名           │ field_mappings      │ mapping             │   ❌    │
+│ ネスト深度       │ 2レベル             │ 1レベル             │   ❌    │
+│ 条件マッピング   │ conditional_mapping │ calculation+format  │   ❌    │
+│ 計算の配置       │ 独立したsubstep     │ mapping内           │   ❌    │
+│ 結果             │ 0 kg-CO2            │ 12,175.5 kg-CO2     │   ✅    │
+└──────────────────┴─────────────────────┴─────────────────────┴─────────┘
+
+
+================================================================================
+                           データフロー比較
+================================================================================
+
+AI生成:
+  Input: sample1_small_factory.json (3 activities, 3 energy consumptions)
+         ↓
+  rule_engine processes transform_activities_to_emissions
+         ↓
+  iterate_energy_consumptions (Level 1)
+         ↓
+  ❌ Tries to process Level 2 substeps
+         ↓
+  ❌ Doesn't recognize 'field_mappings'
+         ↓
+  ❌ Doesn't recognize 'conditional_mapping'
+         ↓
+  Output: [{}, {}, {}]  ← 空のオブジェクト
+
+自動生成:
+  Input: sample1_small_factory.json (3 activities, 3 energy consumptions)
+         ↓
+  rule_engine processes transform_activities_to_emissions
+         ↓
+  iterate_energy_consumptions (Level 1)
+         ↓
+  ✅ Processes 'mapping' array
+         ↓
+  ✅ Applies source, calculation, fixed_value, lookup
+         ↓
+  Output: [
+    {co2_amount: 6250.0, @type: 'Scope2Emission', ...},
+    {co2_amount: 1725.5, @type: 'Scope1Emission', ...},
+    {co2_amount: 4200.0, @type: 'Scope2Emission', ...}
+  ]
+
+
+================================================================================
+                              結論
+================================================================================
+
+AIは素晴らしい構造を生成するが、rule_engineと互換性がない
+→ 自動生成ロジックがrule_engine互換の構造を生成
+→ ハイブリッドアプローチで確実に動作するルールを生成
+
+推奨: 現在の実装を継続使用
+      (AIの提案を参考にしつつ、自動生成で実装)
