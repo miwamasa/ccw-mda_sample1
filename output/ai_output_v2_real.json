@@ -1,0 +1,18 @@
+{
+  "@context": {
+    "ghg": "http://example.org/ghg-report#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "ghg:EmissionReport",
+  "report_id": "Unknown",
+  "report_date": "Unknown",
+  "organization_name": "Unknown",
+  "source_category": "Unknown",
+  "emissions": [
+    {},
+    {},
+    {}
+  ],
+  "total_scope_2": 0,
+  "total_emissions": 0
+}
